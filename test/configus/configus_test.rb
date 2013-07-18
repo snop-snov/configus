@@ -17,52 +17,99 @@ describe "Configus" do
     lambda do
       Configus.build :user_environment do
         env :production do
-          website_url 'http://example.com'
-          email do
-          end
         end
       end
     end.must_raise(RuntimeError)
   end
 
-=begin
-  it "nested one level" do
-    c = Configus::Builder.env :production do
-      website_url 'http://example.com'
-      email do
+  it "check existied environment" do
+    conf = Configus.build :production do
+      env :production do
+        website_url 'http://example.com'
       end
     end
-    c.email.class.must_equal Configus::Config
+    conf.must_equal({:website_url=>"http://example.com"})
+  end
+
+  it "nested one level" do
+    conf = Configus.build :production do
+      env :production do
+        website_url 'http://example.com'
+        email do
+        end
+      end
+    end
+    conf.must_equal({:website_url=>"http://example.com", :email=>{}})
   end
 
   it "nested one level with simple config" do
-    c = Configus::Builder.env :production do
-      website_url 'http://example.com'
-      email do
-        address 'abc@mail.ru'
+    conf = Configus.build :production do
+      env :production do
+        website_url 'http://example.com'
+        email do
+          address 'abc@mail.ru'
+        end
       end
     end
-    c.email.address.must_equal 'abc@mail.ru'
+    conf.email.address.must_equal 'abc@mail.ru'
   end
 
-  it "nested two level" do
-    c = Configus::Builder.env :production do
-      website_url 'http://example.com'
-      email do
-        pop do
-          address 'pop.example.com'
-          port    110
-        end
-        smtp do
-          address 'smtp.example.com'
-          port    25
+  it "second level nested" do
+    conf = Configus.build :production do
+      env :production do
+        website_url 'http://example.com'
+        email do
+          pop do
+            address 'pop.example.com'
+            port    110
+          end
+          smtp do
+            address 'smtp.example.com'
+            port    25
+          end
         end
       end
+
+      env :development do
+        ttt "ttt"
+      end
     end
-    #raise "XXXXXXXXXXXXX" << c.inspect
-    c.must_equal({:website_url=>"http://example.com",
+    #raise "XXXXXXXXXXXXX" << conf.inspect
+    conf.must_equal({:website_url=>"http://example.com",
                   :email=>{:pop=>{:address=>"pop.example.com", :port=>110},
                            :smtp=>{:address=>"smtp.example.com", :port=>25}}})
   end
-=end
+
+  it "check inheriting" do
+    conf = Configus.build :development do # set current environment
+      env :production do
+        website_url 'http://example.com'
+        email do
+          pop do
+            address 'pop.example.com'
+            port    110
+          end
+          smtp do
+            address 'smtp.example.com'
+            port    25
+          end
+        end
+      end
+
+      env :development, :parent => :production do
+        website_url 'http://text.example.com'
+        email do
+          smtp do
+            address 'smpt.text.example.com'
+          end
+        end
+      end
+    end
+
+    #raise "XXXXXXXXXXX" << conf.inspect
+
+    conf.website_url.must_equal 'http://text.example.com'
+    conf.email.pop.port.must_equal 110
+  end
+
 end
