@@ -1,5 +1,4 @@
 require 'test_helper'
-
 describe "Configus" do
   it "true" do
     true.must_equal true
