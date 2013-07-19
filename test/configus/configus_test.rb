@@ -1,9 +1,11 @@
 require 'test_helper'
+require 'configus/proxy_config.rb'
+
 describe "Configus" do
   it "true" do
     true.must_equal true
   end
-
+=begin
   it "simple config data" do
     c = Configus::Builder.new
     conf = c.env :production do
@@ -38,9 +40,10 @@ describe "Configus" do
         end
       end
     end
+    #raise "WWWWWWWWWWWW" << conf.class.inspect
     conf.must_equal({:website_url=>"http://example.com", :email=>{}})
   end
-
+=end
   it "nested one level with simple config" do
     conf = Configus.build :production do
       env :production do
@@ -52,6 +55,7 @@ describe "Configus" do
     end
     conf.email.address.must_equal 'abc@mail.ru'
   end
+=begin
 
   it "second level nested" do
     conf = Configus.build :production do
@@ -90,4 +94,12 @@ describe "Configus" do
     configus.website_url.must_equal "http://text.example.com"
     configus.email.pop.port.must_equal 110
   end
+
+  it "new proxy object" do
+    proxy = Configus::ProxyConfig.new
+    proxy.some_method 'AAAA'
+    proxy.some_method.must_equal "AAAA"
+  end
+=end
+
 end

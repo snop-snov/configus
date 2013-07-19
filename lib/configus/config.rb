@@ -9,7 +9,7 @@ module Configus
       end
     end
 
-    def create_methods
+    def create_methoprds
       self.each do |key, value|
         value.create_methods if value.is_a? Hash
         self.create_method(key, value)
@@ -22,7 +22,7 @@ module Configus
       self.create_methods
     end
 
-    def method_missing(method_name, *args, &block)
+    def add_property(method_name, *args, &block)
       if block_given?
         self[method_name] = Config.new
         self[method_name].instance_eval(&block)
