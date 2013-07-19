@@ -1,9 +1,8 @@
 module Configus
   autoload 'Merging', 'configus/merging'
+  autoload 'DeepMerge', 'active_support/core_ext/hash/deep_merge.rb'
 
   class Builder
-    include Merging
-
     def initialize
       @settings = {}
     end
@@ -23,7 +22,8 @@ module Configus
       conf = Config.new
       conf.instance_eval(&block)
       if options[:parent]
-        conf = deep_merge(@settings[options[:parent]], conf)
+        parent_env_name = options[:parent]
+        conf = @settings[parent_env_name].deep_merge(conf)
       end
       @settings[name] = conf
       conf
@@ -36,6 +36,5 @@ module Configus
     def env_config(env_name)
       @settings[env_name]
     end
-
   end
 end

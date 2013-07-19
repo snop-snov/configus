@@ -81,35 +81,14 @@ describe "Configus" do
   end
 
   it "check inheriting" do
-    conf = Configus.build :development do # set current environment
-      env :production do
-        website_url 'http://example.com'
-        email do
-          pop do
-            address 'pop.example.com'
-            port    110
-          end
-          smtp do
-            address 'smtp.example.com'
-            port    25
-          end
-        end
-      end
-
-      env :development, :parent => :production do
-        website_url 'http://text.example.com'
-        email do
-          smtp do
-            address 'smpt.text.example.com'
-          end
-        end
-      end
-    end
-
-    #raise "XXXXXXXXXXX" << conf.inspect
-
+    conf = Fixtures.development_inherited_config
     conf.website_url.must_equal 'http://text.example.com'
     conf.email.pop.port.must_equal 110
   end
 
+  it "should configus method work" do
+    conf = Fixtures.development_inherited_config
+    configus.website_url.must_equal "http://text.example.com"
+    configus.email.pop.port.must_equal 110
+  end
 end
