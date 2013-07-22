@@ -2,7 +2,6 @@
 
 module Configus
   class Config
-
     def initialize(conf_hash)
       @properties = conf_hash
       create_methods(@properties)
@@ -32,6 +31,5 @@ module Configus
     def method_missing(method_name, *args, &block)
       raise "Configs property #{method_name} does not exist"
     end
-
   end
 end

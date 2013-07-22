@@ -38,17 +38,20 @@ module Configus
       @settings[name] = {:options => options, :block => block}
     end
 
+    def parent_hash(env_name)
+      parent_env_name = @settings[env_name][:options][:parent]
+      raise "You have loop inheriting for #{parent_env_name}" if @inherited_parents.include?(parent_env_name)
+      conf_parent_hash = inherited_conf(parent_env_name)
+    end
+
     def inherited_conf(env_name)
       conf_hash = {}
       @inherited_parents << env_name
-
       block = @settings[env_name][:block]
       conf_hash = HashCreator.generate_hash(&block) if block
 
       if (@settings[env_name][:options][:parent])
-        parent_env_name = @settings[env_name][:options][:parent]
-        raise "You have loop inheriting for #{parent_env_name}" if @inherited_parents.include?(parent_env_name)
-        conf_parent_hash = inherited_conf(parent_env_name)
+        conf_parent_hash = parent_hash(env_name)
         conf_hash = conf_parent_hash.deep_merge(conf_hash)
       end
       conf_hash

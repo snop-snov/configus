@@ -37,5 +37,4 @@ describe "Configus" do
       end
     end.must_raise(RuntimeError)
   end
-
 end
