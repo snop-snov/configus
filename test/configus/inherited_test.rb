@@ -21,7 +21,7 @@ describe "Configus" do
   end
 
   it "must fail for loop inheriting" do
-    lambda do
+    -> do
       conf = Configus.build :development do # set current environment
         env :environment, :parent => :development do
           aaa 'aaa'
@@ -35,6 +35,7 @@ describe "Configus" do
           ccc 'ccc'
         end
       end
-    end.must_raise(RuntimeError)
+    #end.must_raise(RuntimeError)
+    end.must_raise(Configus::EnvironmentLoopError)
   end
 end

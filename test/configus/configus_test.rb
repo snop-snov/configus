@@ -9,17 +9,16 @@ describe "Configus" do
     conf = Configus::Config.new({:website_url=>"http://example.com", :email=>{:address=>"abc@mail.ru"}})
     conf.website_url.must_equal 'http://example.com'
     conf.email.address.must_equal 'abc@mail.ru'
-    #lambda { conf[:email] = "111" }.must_raise(NoMethodError)
-    lambda { conf[:email] = "111" }.must_raise(RuntimeError)
+    -> { conf[:email] = "111" }.must_raise(Configus::ConfigPropertyAccessError)
   end
 
   it "check unexisted environment" do
-    lambda do
+    -> do
       Configus.build :user_environment do
         env :production do
         end
       end
-    end.must_raise(RuntimeError)
+    end.must_raise(Configus::EnvironmentAccessError)
   end
 
   it "check existied environment" do
@@ -90,18 +89,17 @@ describe "Configus" do
   end
 
   it "check unexisting property" do
-    lambda do
+    -> do
       conf = Fixtures.development_inherited_config
       conf.some_method
-    end.must_raise(RuntimeError)
+    end.must_raise(Configus::ConfigPropertyAccessError)
   end
 
   it "check config without block" do
-    lambda do
+    -> do
       conf = Configus.build :production do
         env :production
       end
-    end.must_raise(RuntimeError)
+    end.must_raise(Configus::EnvironmentEmptyError)
   end
-
 end

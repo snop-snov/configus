@@ -21,7 +21,7 @@ module Configus
     def create_methods(properties)
       properties.each do  |key, value|
         if value.is_a? Hash
-          create_method(key, Config.new(value))
+          create_method(key, self.class.new(value))
         else
           create_method(key, value)
         end
@@ -29,7 +29,7 @@ module Configus
     end
 
     def method_missing(method_name, *args, &block)
-      raise "Configs property #{method_name} does not exist"
+      raise ConfigPropertyAccessError.new "Configs property #{method_name} does not exist"
     end
   end
 end

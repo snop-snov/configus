@@ -8,28 +8,27 @@ module Configus
   class Builder
     def initialize
       @settings = {}
-      @inherited_parents = []
     end
 
-    def self.build(env_name, &block)
-      build = Builder.new
-      build.instance_eval(&block)
+    def self.build(current_env_name, &block)
+      builder = new
+      builder.instance_eval(&block)
 
-      if build.has_env? env_name
-        build.env_config(env_name)
+      if builder.has_env? current_env_name
+        builder.env_config(current_env_name)
       else
-        raise "Env does not exist"
+        raise EnvironmentAccessError.new "Environment does not exist"
       end
     end
 
-    def has_env?(env_name)
-      @settings.has_key? env_name
+    def has_env?(current_env_name)
+      @settings.has_key? current_env_name
     end
 
-    def env_config(env_name)
-      @inherited_parents.clear
-      conf_hash = inherited_conf(env_name)
-      raise "Environment is empty" if conf_hash.empty?
+    def env_config(current_env_name)
+      inherited_parents = []
+      conf_hash = build_config_hash(current_env_name, inherited_parents)
+      raise EnvironmentEmptyError.new "Environment is empty" if conf_hash.empty?
       conf = Config.new(conf_hash)
     end
 
@@ -38,20 +37,22 @@ module Configus
       @settings[name] = {:options => options, :block => block}
     end
 
-    def parent_hash(env_name)
+    def build_parent_env_hash(env_name, inherited_parents)
       parent_env_name = @settings[env_name][:options][:parent]
-      raise "You have loop inheriting for #{parent_env_name}" if @inherited_parents.include?(parent_env_name)
-      conf_parent_hash = inherited_conf(parent_env_name)
+      raise EnvironmentLoopError.new "You have loop inheriting for #{parent_env_name}" if inherited_parents.include?(parent_env_name)
+
+      conf_parent_hash = build_config_hash(parent_env_name, inherited_parents)
     end
 
-    def inherited_conf(env_name)
+    def build_config_hash(env_name, inherited_parents)
       conf_hash = {}
-      @inherited_parents << env_name
+      inherited_parents << env_name
+
       block = @settings[env_name][:block]
-      conf_hash = HashCreator.generate_hash(&block) if block
+      conf_hash = ConfigHashCreator.generate_hash(&block) if block
 
       if (@settings[env_name][:options][:parent])
-        conf_parent_hash = parent_hash(env_name)
+        conf_parent_hash = build_parent_env_hash(env_name, inherited_parents)
         conf_hash = conf_parent_hash.deep_merge(conf_hash)
       end
       conf_hash
