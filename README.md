@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/snop-snov/configus.png?branch=master)](https://travis-ci.org/snop-snov/configus)
+
+[![Coverage Status](https://coveralls.io/repos/snop-snov/configus/badge.png)](https://coveralls.io/r/snop-snov/configus)
+
 # Configus
 
 TODO: Write a gem description
