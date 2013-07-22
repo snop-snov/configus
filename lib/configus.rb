@@ -4,9 +4,9 @@ require 'configus/kernel_extension'
 module Configus
   autoload 'Builder', 'configus/builder'
   autoload 'Config', 'configus/config'
-  autoload 'ProxyConfig', 'configus/proxy_config'
+  autoload 'HashCreator', 'configus/hash_creator'
 
-  #autoload 'Kernel', 'configus/kernel_extension'
+  #autoload 'ProxyConfig', 'configus/proxy_config'
 
   def self.build(env_name, &block)
     @conf = Builder.build(env_name, &block)

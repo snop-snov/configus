@@ -1,4 +1,4 @@
-#require 'active_support/core_ext/hash/deep_merge.rb'
+require 'active_support/core_ext/hash/deep_merge.rb'
 #require 'configus/proxy_config'
 
 module Configus
@@ -8,6 +8,7 @@ module Configus
   class Builder
     def initialize
       @settings = {}
+      @inherited_parents = []
     end
 
     def self.build(env_name, &block)
@@ -21,33 +22,36 @@ module Configus
       end
     end
 
-    def env(name, options = {}, &block)
-      proxy_conf = ProxyConfig.new
-      proxy_conf.instance_eval(&block)
-      conf = proxy_conf.conf
-      if options[:parent]
-        parent_env_name = options[:parent]
-        conf = @settings[parent_env_name].deep_merging(conf)
-      end
-      @settings[name] = conf
-      conf
-
-      #conf = Config.new
-      #conf.instance_eval(&block)
-      #if options[:parent]
-      #  parent_env_name = options[:parent]
-      #  conf = @settings[parent_env_name].deep_merging(conf)
-      #end
-      #@settings[name] = conf
-      #conf
-    end
-
     def has_env?(env_name)
       @settings.has_key? env_name
     end
 
     def env_config(env_name)
-      @settings[env_name]
+      @inherited_parents.clear
+      conf_hash = inherited_conf(env_name)
+      raise "Environment is empty" if conf_hash.empty?
+      conf = Config.new(conf_hash)
+    end
+
+    private
+    def env(name, options = {}, &block)
+      @settings[name] = {:options => options, :block => block}
+    end
+
+    def inherited_conf(env_name)
+      conf_hash = {}
+      @inherited_parents << env_name
+
+      block = @settings[env_name][:block]
+      conf_hash = HashCreator.generate_hash(&block) if block
+
+      if (@settings[env_name][:options][:parent])
+        parent_env_name = @settings[env_name][:options][:parent]
+        raise "You have loop inheriting for #{parent_env_name}" if @inherited_parents.include?(parent_env_name)
+        conf_parent_hash = inherited_conf(parent_env_name)
+        conf_hash = conf_parent_hash.deep_merge(conf_hash)
+      end
+      conf_hash
     end
   end
 end

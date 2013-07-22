@@ -1,35 +1,36 @@
-require 'active_support/core_ext/hash/deep_merge.rb'
+#require 'active_support/core_ext/hash/deep_merge.rb'
 
 module Configus
-  class Config < Hash
-    #private
-    def create_method(method_name, *args, &block)
+  class Config
+
+    def initialize(conf_hash)
+      @properties = conf_hash
+      create_methods(@properties)
+    end
+
+    def to_hash
+      @properties.clone
+    end
+
+    private
+    def create_method(method_name, value)
       define_singleton_method(method_name) do
-        self[method_name]
+        value
       end
     end
 
-    def create_methoprds
-      self.each do |key, value|
-        value.create_methods if value.is_a? Hash
-        self.create_method(key, value)
+    def create_methods(properties)
+      properties.each do  |key, value|
+        if value.is_a? Hash
+          create_method(key, Config.new(value))
+        else
+          create_method(key, value)
+        end
       end
     end
 
-    #public
-    def deep_merging(other_conf)
-      self.deep_merge!(other_conf)
-      self.create_methods
-    end
-
-    def add_property(method_name, *args, &block)
-      if block_given?
-        self[method_name] = Config.new
-        self[method_name].instance_eval(&block)
-      else
-        self[method_name] = args.first
-      end
-      create_method(method_name, *args, &block)
+    def method_missing(method_name, *args, &block)
+      raise "Configs property #{method_name} does not exist"
     end
 
   end
