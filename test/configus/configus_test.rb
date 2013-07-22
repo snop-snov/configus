@@ -5,6 +5,10 @@ describe "Configus" do
     true.must_equal true
   end
 
+  def test_true
+    assert_equal true, true
+  end
+
   it "config test" do
     conf = Configus::Config.new({:website_url=>"http://example.com", :email=>{:address=>"abc@mail.ru"}})
     conf.website_url.must_equal 'http://example.com'
